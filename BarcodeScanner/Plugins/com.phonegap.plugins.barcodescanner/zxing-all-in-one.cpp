@@ -1962,6 +1962,12 @@ unsigned char* GreyscaleLuminanceSource::getMatrix() {
       memcpy(result + row * width_, greyData_ + (top_ + row) * dataWidth_ + left_, width_);
     }
   }
+    for (int i = 0; i < size; i++)
+    {
+        int val = static_cast<int>(result[i]);
+        unsigned char cz = (255 -  val);
+        result[i] = cz;
+    }
   return result;
 }
 

@@ -601,11 +601,6 @@ parentViewController:(UIViewController*)parentViewController
             greyData[nj*greyWidth + ni] = value;
         }
     }
-    unsigned char* result = new unsigned char[width * height];
-    for (int i = 0; i < greyWidth; i++)
-    {
-        result[i] = static_cast<unsigned char>(255 - result[i]);
-    }
     
     
     
@@ -616,6 +611,7 @@ parentViewController:(UIViewController*)parentViewController
     Ref<LuminanceSource> luminanceSource (
                                           new GreyscaleLuminanceSource(greyData, greyWidth, greyWidth, 0, 0, greyWidth, greyWidth)
                                           );
+    
     
     return luminanceSource;
 }
