@@ -1,0 +1,208 @@
+<!doctype html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>GCM Reader</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <!-- build:css styles/vendor.css -->
+    <!-- bower:css -->
+    <link rel="stylesheet" href="js/intel-appframework/css/af.ui.base.css">
+    <link rel="stylesheet" href="js/intel-appframework/css/af.ui.css">
+    <!-- endbower -->
+    <!-- endbuild -->
+    <!-- build:css(.tmp) styles/main.css -->
+    <link rel="stylesheet" href="js/intel-appframework/css/icons.css">
+
+    <link rel="stylesheet" href="js/intel-appframework/css/src/ios7.css">
+
+    <link rel="stylesheet" href="css/main.css">
+    <!-- endbuild -->
+</head>
+<body>
+//initial event handler to detect when appMobi is ready to roll
+document.addEventListener("appMobi.device.ready",onDeviceReady,false);
+<div id="afui" class='ios7'>
+
+    <div id="header"></div>
+
+    <div id="content">
+
+        <!-- Login -->
+        <div class="panel" title="Login" id="login" selected="selected">
+
+            <div class="grid" data-appbuilder-object="grid23" data-position="static">
+
+                <div class="container col3-3" data-appbuilder-object="container">
+
+                    <div class="appInfo">
+                        <div class="logo">
+                            <img src="img/sg_ai.png" alt="Stevanato Group" data-appbuilder-object="image" class="">
+                        </div>
+                        <div class="appName">
+                            <span><strong>GCM Reader</strong>  <i style="color: #9C9E9F;">beta</i></span>
+                        </div>
+                    </div>
+
+                    <form id="authenticate" style="display: block;">
+
+                        <p>Insert username and password</p>
+
+                        <input type="text" placeholder="username" id="username" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <input type="password" placeholder="password" id="password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <input type="submit" value="Login" class="button" data-appbuilder-object="button">
+
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- HOME -->
+        <div class="panel" title="Main" data-nav="nav_0" id="page_0" >
+
+            <div class="grid" data-appbuilder-object="grid23" data-position="static">
+
+                <div class="container col3-3" data-appbuilder-object="container">
+
+                    <div class="appInfo">
+                        <div class="logo">
+                            <img src="img/sg_ai.png" alt="Stevanato Group" data-appbuilder-object="image" class="">
+                        </div>
+                        <div class="appName">
+                            <span><strong>GCM Reader</strong>  <i style="color: #9C9E9F;">beta</i></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <ul class="list featureList">
+                            <li>
+                                <a href="#page_1" id="openCamera">
+                                    <span class="icon camera big"></span>
+
+                                    <span class="name"><strong>Acquire Code</strong></span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="#page_2" id="openQRcode">
+                                    <span class="icon mail big"></span>
+
+                                    <span class="name"><strong>Send code</strong></span>
+                                </a>
+                            </li>
+
+
+                        </ul>
+                    </div>
+
+                    <div class="lastCodeRead">
+                        <p><i>Last code read:</i></p>
+
+                        <strong><span>238HE293X</span></strong>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- ACQUIRE -->
+        <div class="panel" title="Acquire" data-nav="nav_1" id="page_1">
+
+            <div class="grid" data-appbuilder-object="grid23" data-position="static">
+
+
+            </div>
+        </div>
+
+
+        <!-- SEND CODE -->
+        <div class="panel" title="Send" data-nav="nav_2" id="page_2">
+
+            <div class="grid" data-appbuilder-object="grid23" data-position="static">
+
+                <div class="container col3-3" data-appbuilder-object="container">
+
+                    <div class="appInfo">
+                        <div class="logo">
+                            <img src="img/sg_ai.png" alt="Stevanato Group" data-appbuilder-object="image" class="">
+                        </div>
+                        <div class="appName">
+                            <span><strong>GCM Reader</strong>  <i style="color: #9C9E9F;">beta</i></span>
+                        </div>
+                    </div>
+
+
+                    <!-- da mostrare solo se non è stato letto nessun codice -->
+                    <div id="error-acquired" style="display: block;">
+                        <h2 style="height: auto;">Error: <i>You have to acquire the code before sending it.</i></h2>
+                    </div>
+
+
+                    <!-- da mostrare se è stato letto un codice -->
+                    <form id="sendEmail" style="display: block;">
+
+                        <div class="formGroupHead">You can now send the code via email</div>
+
+                        <div class="lastCodeRead">
+                            <p><i>Last code read:</i></p>
+
+                            <strong><span>238HE293X</span></strong>
+                        </div>
+                        <p>Insert email</p>
+                        <input type="text" placeholder="Email" name="email" autocorrect="off" autocapitalize="off" >
+                        <input type="submit" value="Send Code" class="button" data-appbuilder-object="button">
+                    </form>
+
+
+                </div>
+
+
+            </div>
+        </div>
+
+
+    </div>
+
+    <div id="navbar">
+       <p>Please authenticate...</p>
+    </div>
+
+
+</div>
+
+
+</body>
+
+<!-- build:js scripts/vendor.js -->
+<!-- bower:js -->
+<script src="js/intel-appframework/appframework.min.js"></script>
+<script src="js/intel-appframework/ui/appframework.ui.min.js"></script>
+<!-- endbower -->
+<!-- endbuild -->
+
+
+<!-- build:js({app,.tmp}) scripts/main.js -->
+<script type="text/javascript" src="cordova.js"></script>
+
+<script src="js/index.js"></script>
+
+<script type="text/javascript">
+    app.initialize();
+</script>
+
+<!-- endbuild -->
+
+</html>
