@@ -107,6 +107,16 @@
 - (IBAction)cancelButtonPressed:(id)sender;
 
 
+//------------------------------------------------------------------------------
+// Custom XIB interface definition
+//------------------------------------------------------------------------------
+
+- (IBAction)cancelCapturing:(id)sender;
+- (IBAction)onFocusChange:(id)sender;
+- (IBAction)onWhiteChange:(id)sender;
+- (IBAction)onDurationChange:(id)sender;
+- (IBAction)onGainChanged:(id)sender;
+
 @end
 
 //------------------------------------------------------------------------------
@@ -706,6 +716,58 @@ parentViewController:(UIViewController*)parentViewController
 @synthesize overlayView         = _overlayView;
 @synthesize twoFingerPinch      = _twoFingerPinch;
 @synthesize zoomLabel           = _zoomLabel;
+
+
+//------------------------------------------------------------------------------
+// Custon XIB implementation
+//------------------------------------------------------------------------------
+
+- (IBAction)cancelCapturing:(id)sender {
+    
+    NSLog(@"CLICCCKER");
+    
+}
+
+//--------------------------------------------------------------------------
+
+- (IBAction)onFocusChange:(id)sender {
+    
+    UISlider *slider = (UISlider *)sender;
+    NSLog(@"SliderValue **onFocusChange** ... %d",(int)[slider value]);
+    
+}
+
+//--------------------------------------------------------------------------
+
+- (IBAction)onWhiteChange:(id)sender {
+    
+    UISlider *slider = (UISlider *)sender;
+    NSLog(@"SliderValue **onWhiteChange** ... %d",(int)[slider value]);
+    
+}
+
+//--------------------------------------------------------------------------
+
+- (IBAction)onDurationChange:(id)sender {
+    
+    UISlider *slider = (UISlider *)sender;
+    NSLog(@"SliderValue **onDurationChange** ... %d",(int)[slider value]);
+    
+}
+
+//--------------------------------------------------------------------------
+
+- (IBAction)onGainChanged:(id)sender {
+    
+    UISlider *slider = (UISlider *)sender;
+    NSLog(@"SliderValue **onGainChanged** ... %d",(int)[slider value]);
+    
+}
+
+//------------------------------------------------------------------------------
+// END Custon XIB implementation
+//------------------------------------------------------------------------------
+
 
 //--------------------------------------------------------------------------
 - (id)initWithProcessor:(CDVbcsProcessor*)processor alternateOverlay:(NSString *)alternateXib {
