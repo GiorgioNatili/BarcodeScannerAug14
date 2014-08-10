@@ -856,12 +856,14 @@ parentViewController:(UIViewController*)parentViewController
     CGRect bounds = self.overlayView.bounds;
     CGFloat rootViewHeight = CGRectGetHeight(bounds);
     CGFloat rootViewWidth  = CGRectGetWidth(bounds);
-    CGRect  rectArea       = CGRectMake(0, (rootViewHeight / 2) - 35, rootViewWidth / 2, 0);
+    CGRect  rectArea       = CGRectMake(0, rootViewHeight, rootViewWidth, 0);
+    
+    NSLog(@"rectArea: %@", NSStringFromCGRect(rectArea));
     
     [self addRecticleTo: self.overlayView :rectArea];
 
-    
     return self.overlayView;
+    
 }
 
 //--------------------------------------------------------------------------
@@ -917,36 +919,7 @@ parentViewController:(UIViewController*)parentViewController
     [overlayView addSubview: toolbar];
     
     [self addRecticleTo: overlayView :rectArea];
-    
-    /*
-    
-    UIImage* reticleImage = [self buildReticleImage];
-    UIView* reticleView = [[[UIImageView alloc] initWithImage: reticleImage] autorelease];
-    CGFloat minAxis = MIN(rootViewHeight, rootViewWidth);
-    
-    rectArea = CGRectMake(
-                          0.5 * (rootViewWidth  - minAxis),
-                          0.5 * (rootViewHeight - minAxis),
-                          minAxis,
-                          minAxis
-                          );
-    
-    [reticleView setFrame:rectArea];
-    
-    reticleView.opaque           = NO;
-    reticleView.contentMode      = UIViewContentModeScaleAspectFit;
-    reticleView.autoresizingMask = 0
-    | UIViewAutoresizingFlexibleLeftMargin
-    | UIViewAutoresizingFlexibleRightMargin
-    | UIViewAutoresizingFlexibleTopMargin
-    | UIViewAutoresizingFlexibleBottomMargin
-    ;
-    
-    [overlayView addSubview: reticleView];
-     
-     */
-    
-    
+        
     // TODO check if the zoom is really used
     
     int zoomLabelWidth  = 120;
@@ -1002,9 +975,9 @@ parentViewController:(UIViewController*)parentViewController
 
 //--------------------------------------------------------------------------
 
-#define RETICLE_SIZE    500.0f
-#define RETICLE_WIDTH    10.0f
-#define RETICLE_OFFSET   60.0f
+#define RETICLE_SIZE    600.0f
+#define RETICLE_WIDTH    7.0f
+#define RETICLE_OFFSET   140.0f
 #define RETICLE_ALPHA     0.4f
 
 //-------------------------------------------------------------------------
