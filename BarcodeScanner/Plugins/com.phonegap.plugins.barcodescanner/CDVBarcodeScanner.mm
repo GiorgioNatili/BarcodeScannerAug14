@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 #import <AssetsLibrary/AssetsLibrary.h>
+#import "AVCaptureDevicePrivateApis.h"
 
 //------------------------------------------------------------------------------
 // use the all-in-one version of zxing that we built
@@ -61,6 +62,7 @@
 @property (nonatomic, retain) UIViewController*           parentViewController;
 @property (nonatomic, retain) CDVbcsViewController*       viewController;
 @property (nonatomic, retain) AVCaptureSession*           captureSession;
+@property (nonatomic, retain) AVCaptureDevice*            captureDevice;
 @property (nonatomic, retain) AVCaptureVideoPreviewLayer* previewLayer;
 @property (nonatomic, retain) NSString*                   alternateXib;
 @property (nonatomic)         CGFloat                     effectiveScale;
@@ -69,6 +71,11 @@
 @property (nonatomic)         BOOL                        is2D;
 @property (nonatomic)         BOOL                        capturing;
 @property (nonatomic)         BOOL                        zooming;
+// Values updated by the slider and refleted into the view
+@property (nonatomic)         float                       exposureGainValue;
+@property (nonatomic)         float                       exposureDurationValue;
+@property (nonatomic)         float                       whiteValue;
+@property (nonatomic)         float                       focusValue;
 
 - (id)initWithPlugin:(CDVBarcodeScanner*)plugin callback:(NSString*)callback parentViewController:(UIViewController*)parentViewController alterateOverlayXib:(NSString *)alternateXib alterateZoomValue:(CGFloat)effectiveScale;
 - (void)scanBarcode;
@@ -97,7 +104,7 @@
 @property (nonatomic, unsafe_unretained) id orientationDelegate;
 @property (nonatomic, retain) UIPinchGestureRecognizer *twoFingerPinch;
 // zoom label
-@property (nonatomic, retain) UILabel*                    zoomLabel;
+@property (nonatomic, retain) UILabel*          zoomLabel;
 
 - (id)initWithProcessor:(CDVbcsProcessor*)processor alternateOverlay:(NSString *)alternateXib;
 - (void)startCapturing;
@@ -105,7 +112,6 @@
 - (UIImage*)buildReticleImage;
 - (void)shutterButtonPressed;
 - (IBAction)cancelButtonPressed:(id)sender;
-
 
 //------------------------------------------------------------------------------
 // Custom XIB interface definition
@@ -116,6 +122,7 @@
 - (IBAction)onWhiteChange:(id)sender;
 - (IBAction)onDurationChange:(id)sender;
 - (IBAction)onGainChanged:(id)sender;
+- (void)updateCaptureDevice;
 
 @end
 
@@ -229,6 +236,7 @@
 @synthesize parentViewController = _parentViewController;
 @synthesize viewController       = _viewController;
 @synthesize captureSession       = _captureSession;
+@synthesize captureDevice        = _captureDevice;
 @synthesize previewLayer         = _previewLayer;
 @synthesize alternateXib         = _alternateXib;
 @synthesize is1D                 = _is1D;
@@ -237,6 +245,12 @@
 @synthesize effectiveScale       = _effectiveScale;
 @synthesize zooming              = _zooming;
 @synthesize updatedScaleDelta    = _updatedScaleDelta;
+
+// Image manipulation settings
+@synthesize exposureGainValue       = _exposureGainValue;
+@synthesize exposureDurationValue   = _exposureDurationValue;
+@synthesize whiteValue              = _whiteValue;
+@synthesize focusValue              = _focusValue;
 
 //--------------------------------------------------------------------------
 - (id)initWithPlugin:(CDVBarcodeScanner*)plugin
@@ -270,6 +284,7 @@ parentViewController:(UIViewController*)parentViewController
     self.parentViewController = nil;
     self.viewController = nil;
     self.captureSession = nil;
+    self.captureDevice = nil;
     self.previewLayer = nil;
     self.alternateXib = nil;
     self.effectiveScale = nil;
@@ -352,6 +367,9 @@ parentViewController:(UIViewController*)parentViewController
     
     AVCaptureVideoDataOutput* output = [[[AVCaptureVideoDataOutput alloc] init] autorelease];
     if (!output) return @"unable to obtain video capture output";
+    
+    // Pointer needed in order to apply the effect in runtime
+    self.captureDevice = device;
     
     NSDictionary* videoOutputSettings = [NSDictionary
                                          dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA]
@@ -467,7 +485,7 @@ parentViewController:(UIViewController*)parentViewController
         // [self.previewLayer setAffineTransform:CGAffineTransformMakeScale(effectiveScale, effectiveScale)];
         // [CATransaction commit];
         
-        NSLog(@"THE current scale is : %f", effectiveScale);
+        // NSLog(@"THE current scale is : %f", effectiveScale);
         
         //   NSLog(@"THE current scale DELATED is : %f", effectiveScale * self.updatedScaleDelta);
         
@@ -612,8 +630,6 @@ parentViewController:(UIViewController*)parentViewController
         }
     }
     
-    
-    
     CVPixelBufferUnlockBaseAddress(imageBuffer,0);
     
     using namespace zxing;
@@ -724,7 +740,7 @@ parentViewController:(UIViewController*)parentViewController
 
 - (IBAction)cancelCapturing:(id)sender {
     
-    NSLog(@"CLICCCKER");
+    [self.processor performSelector:@selector(barcodeScanCancelled) withObject:nil afterDelay:0];
     
 }
 
@@ -733,7 +749,38 @@ parentViewController:(UIViewController*)parentViewController
 - (IBAction)onFocusChange:(id)sender {
     
     UISlider *slider = (UISlider *)sender;
-    NSLog(@"SliderValue **onFocusChange** ... %d",(int)[slider value]);
+    float currentValue = (float)[slider value];
+    
+    self.processor.focusValue = currentValue;
+    
+    NSLog(@"SliderValue **onFocusChange** ... %.4f", currentValue);
+    
+    AVCaptureDevice* currentDevice = self.processor.captureDevice;
+    
+    [self updateCapture:currentDevice];
+    
+    if ( [currentDevice lockForConfiguration:NULL] == NO ) {
+        
+        [currentDevice lockForConfiguration:NULL];
+        
+    }
+    
+    // enable the manual focus mode, then check to see if that worked
+    currentDevice.manualFocusSupportEnabled = YES;
+    if ([currentDevice isFocusModeSupported:AVCaptureFocusModeManual]) {
+        // set the focus position, the range is [0..1]
+        currentDevice.focusPosition = self.processor.focusValue;
+        
+        // tap the device to use the new value by setting the mode to manual
+        currentDevice.focusMode = AVCaptureFocusModeManual;
+        
+    }
+    
+    if ( [currentDevice lockForConfiguration:NULL] == YES ) {
+        
+        [currentDevice unlockForConfiguration];
+        
+    }
     
 }
 
@@ -742,7 +789,34 @@ parentViewController:(UIViewController*)parentViewController
 - (IBAction)onWhiteChange:(id)sender {
     
     UISlider *slider = (UISlider *)sender;
-    NSLog(@"SliderValue **onWhiteChange** ... %d",(int)[slider value]);
+    float currentValue = (float)[slider value];
+    
+    NSLog(@"SliderValue **onWhiteChange** ... %.4f", currentValue);
+    
+    self.processor.whiteValue = currentValue;
+    
+    AVCaptureDevice* currentDevice = self.processor.captureDevice;
+    
+    [self updateCapture:currentDevice];
+    
+    if ( [currentDevice lockForConfiguration:NULL] == NO ) {
+        
+        [currentDevice lockForConfiguration:NULL];
+        
+    }
+    
+    currentDevice.whiteBalanceTemperature = self.processor.whiteValue;
+    
+    // tap the device to use the new value by setting the mode
+    if ([currentDevice isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance]) {
+        currentDevice.whiteBalanceMode = AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance;
+    }
+
+    if ( [currentDevice lockForConfiguration:NULL] == YES ) {
+        
+        [currentDevice unlockForConfiguration];
+        
+    }
     
 }
 
@@ -751,8 +825,53 @@ parentViewController:(UIViewController*)parentViewController
 - (IBAction)onDurationChange:(id)sender {
     
     UISlider *slider = (UISlider *)sender;
-    NSLog(@"SliderValue **onDurationChange** ... %d",(int)[slider value]);
+    float currentValue = (float)[slider value];
     
+    NSLog(@"SliderValue **onDurationChange** ... %.4f", currentValue);
+    
+    NSInteger exposureTimes[] = { 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512, 768, 1024 };
+    int rounded = (currentValue);
+    
+    AVCaptureDevice* currentDevice = self.processor.captureDevice;
+    
+    [self updateCapture:currentDevice];
+    
+    
+    if ( [currentDevice lockForConfiguration:NULL] == NO ) {
+        
+        [currentDevice lockForConfiguration:NULL];
+        
+    }
+    
+    currentDevice.manualExposureSupportEnabled = YES;
+    
+    try {
+        
+        if ([currentDevice isExposureModeSupported:AVCaptureExposureModeManual]) {
+        
+            NSInteger exposureDuration = exposureTimes[rounded];
+            currentDevice.exposureDuration = AVCaptureExposureDurationMake(exposureDuration);
+            
+        }
+        
+    } catch (NSException *exception) {
+        
+        NSLog(@"Exception when changing the duration:%@", exception);
+        NSInteger exposureDuration = exposureTimes[9];
+        currentDevice.exposureDuration = AVCaptureExposureDurationMake(exposureDuration);
+
+        
+    }
+    
+     currentDevice.exposureMode = AVCaptureExposureModeManual;
+    
+    
+    if ( [currentDevice lockForConfiguration:NULL] == YES ) {
+        
+        [currentDevice unlockForConfiguration];
+        
+    }
+
 }
 
 //--------------------------------------------------------------------------
@@ -760,13 +879,71 @@ parentViewController:(UIViewController*)parentViewController
 - (IBAction)onGainChanged:(id)sender {
     
     UISlider *slider = (UISlider *)sender;
-    NSLog(@"SliderValue **onGainChanged** ... %d",(int)[slider value]);
+    float currentValue = (float)[slider value];
+    
+    self.processor.exposureGainValue = currentValue;
+    
+    NSLog(@"SliderValue **onGainChanged** ... %.4f", currentValue);
+    
+    AVCaptureDevice* currentDevice = self.processor.captureDevice;
+    
+    [self updateCapture:currentDevice];
+    
+    
+    if ( [currentDevice lockForConfiguration:NULL] == NO ) {
+        
+        [currentDevice lockForConfiguration:NULL];
+        
+    }
+
+    currentDevice.manualExposureSupportEnabled = YES;
+    
+    if ([currentDevice isExposureModeSupported:AVCaptureExposureModeManual]) {
+        
+        // set the gain and exposure duration, duration is set as a fractional
+        // shutter speed just like a "real" camera. Gain is a value from 1..?
+        
+        currentDevice.exposureGain = self.processor.exposureGainValue;
+        currentDevice.exposureMode = AVCaptureExposureModeManual;
+      
+    }
+    
+    if ( [currentDevice lockForConfiguration:NULL] == YES ) {
+        
+        [currentDevice unlockForConfiguration];
+        
+    }
     
 }
 
 //------------------------------------------------------------------------------
 // END Custon XIB implementation
 //------------------------------------------------------------------------------
+
+
+- (void)updateCapture:(AVCaptureDevice *)device{
+    
+    // set the interest point for the exposure
+    NSError*    error = nil;
+    if ([device lockForConfiguration:&error]) {
+        // these two values seem to get set automatically by the system when the
+        // capture device starts up. Unfortunately they seem to be set differently
+        // depending on the lighting environment at start, so we reset them every
+        // time to ensure consistency
+        device.contrast = 0.0;
+        device.saturation = 0.5;
+        
+        // we don't want the device to "help" us here, so we turn off low light
+        // boost mode completely
+        if (device.lowLightBoostSupported) {
+            device.automaticallyEnablesLowLightBoostWhenAvailable = NO;
+        }
+        
+        [device unlockForConfiguration];
+    
+    }
+    
+}
 
 
 //--------------------------------------------------------------------------
