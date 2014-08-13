@@ -51,7 +51,7 @@ var app = {
         
         app.initAuthentication(true);
         app.resetCodeFields();
-
+              
         $('#page_0').bind('loadpanel', function(e){
 
             app.resetCodeFields();
@@ -166,6 +166,25 @@ var app = {
     onSendDataCode: function(evt){
 
         evt.preventDefault();
+        
+        if(app.codeAcquired === true && app.position){
+            
+            app.canSend = true;
+            
+        }else{
+            
+            app.canSend = false
+            
+        }
+        
+        
+        if(!app.canSend){
+            
+            navigator.notification.alert('You can\'t send data if you don\'t acquire a code or you don\'t allowed the device to detect your position', null);
+            return;
+            
+        }
+
 
         if(!app.canSend){
 
@@ -198,7 +217,7 @@ var app = {
             success: function (data, status, jqXHR) {
 
                 $.ui.hideMask();
-                navigator.notification.alert('Success: ' + data.StatusDescription, null);
+                navigator.notification.alert('Success: the code has been succesfully sent!', null);
 
                 $.ui.loadContent("#page_0",false,false,"up");
 
@@ -238,7 +257,7 @@ var app = {
     acquireQRCode: function(){
 
         var zoomFactor = '2.7';
-        cordova.plugins.barcodeScanner.scan(app.onQRCodeSuccess, app.onQRCodeFailure, [zoomFactor]);
+        cordova.plugins.barcodeScanner.scan(app.onQRCodeSuccess, app.onQRCodeFailure, [zoomFactor, 'scannerOverlay']);
 
     },
 
@@ -253,30 +272,32 @@ var app = {
 
         result.text === 'not_valid' ? app.codeAcquired = false : app.codeAcquired = true;
                       
-        navigator.notification.alert('We got back a code: ' + result.text, null);
-                    
-        if(result.cancelled)return;
-        navigator.geolocation.getCurrentPosition(app.onCoordinateSuccess, app.onCoordinateFailure);
-
-        /*
-         alert("We got a barcode\n" +
-         "Result: " + result.text + "\n" +
-         "Format: " + result.format + "\n" +
-         "Cancelled: " + result.cancelled);
-         */
-
+        navigator.notification.alert('We got back a code: ' + result.text, function(){
+                                                   
+                                     if(result.cancelled === 1)return;
+                                     
+                                     
+                                     var options = { enableHighAccuracy: true };
+                                     navigator.geolocation.getCurrentPosition(app.onCoordinateSuccess, app.onCoordinateFailure, options);
+       
+                                     
+                                                   
+       });
+                      
+           
     },
 
     onCoordinateSuccess: function(position){
 
-        app.position = position;
+        app.position = position.coords;
+                      
         $.ui.loadContent("#page_0",false,false,"up");
 
     },
 
     onCoordinateFailure: function(error){
 
-        navigator.notification.alert('code: '    + error.code    + '\n' + 'message: ' + error.message + '\n');
+        navigator.notification.alert('code: '    + error.code    + '\n' + 'message: ' + error.message + '\n', null);
         app.canSend = false;
 
     },

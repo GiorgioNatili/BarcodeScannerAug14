@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="5023" systemVersion="13A603" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="5056" systemVersion="13D65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
     <dependencies>
+        <deployment defaultVersion="1536" identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
     </dependencies>
     <objects>
@@ -9,7 +10,60 @@
         <view contentMode="scaleToFill" id="iN0-l3-epB">
             <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="hZM-Zo-8Wj">
+                    <rect key="frame" x="118" y="518" width="184" height="31"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                </slider>
+                <navigationBar contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="MD5-GE-gLh">
+                    <rect key="frame" x="0.0" y="9" width="320" height="44"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="320" id="J48-nK-VyC"/>
+                    </constraints>
+                    <items>
+                        <navigationItem title="Code Scanner" id="TSj-NX-ZIG">
+                            <barButtonItem key="leftBarButtonItem" title="Cancel" id="8wD-3J-FZ6"/>
+                        </navigationItem>
+                    </items>
+                </navigationBar>
+                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="8VR-pn-3al">
+                    <rect key="frame" x="118" y="480" width="184" height="31"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                </slider>
+                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="wm9-99-XG6">
+                    <rect key="frame" x="118" y="442" width="184" height="31"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                </slider>
+                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="Byw-du-biV">
+                    <rect key="frame" x="118" y="404" width="184" height="31"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="180" id="F2u-oe-UQY"/>
+                    </constraints>
+                </slider>
+            </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="MD5-GE-gLh" firstAttribute="top" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="top" id="0gQ-0r-srU"/>
+                <constraint firstItem="MD5-GE-gLh" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="10" id="6UO-GW-PpA"/>
+                <constraint firstItem="hZM-Zo-8Wj" firstAttribute="height" secondItem="8VR-pn-3al" secondAttribute="height" id="9SC-6g-Ka9"/>
+                <constraint firstItem="hZM-Zo-8Wj" firstAttribute="top" secondItem="8VR-pn-3al" secondAttribute="bottom" constant="8" symbolic="YES" id="BTs-Ct-j5d"/>
+                <constraint firstItem="8VR-pn-3al" firstAttribute="top" secondItem="wm9-99-XG6" secondAttribute="bottom" constant="8" symbolic="YES" id="EmN-hV-fZp"/>
+                <constraint firstItem="8VR-pn-3al" firstAttribute="leading" secondItem="wm9-99-XG6" secondAttribute="leading" id="GUD-4p-ptr"/>
+                <constraint firstItem="hZM-Zo-8Wj" firstAttribute="height" secondItem="Byw-du-biV" secondAttribute="height" id="Vg4-V0-T7s"/>
+                <constraint firstItem="hZM-Zo-8Wj" firstAttribute="width" secondItem="8VR-pn-3al" secondAttribute="width" id="WMH-rH-QRf"/>
+                <constraint firstAttribute="trailing" secondItem="Byw-du-biV" secondAttribute="trailing" constant="20" symbolic="YES" id="X1n-OW-Svg"/>
+                <constraint firstItem="Byw-du-biV" firstAttribute="leading" secondItem="wm9-99-XG6" secondAttribute="leading" id="bIf-fe-gbV"/>
+                <constraint firstItem="8VR-pn-3al" firstAttribute="leading" secondItem="hZM-Zo-8Wj" secondAttribute="leading" id="dr7-Mj-F67"/>
+                <constraint firstItem="wm9-99-XG6" firstAttribute="top" secondItem="Byw-du-biV" secondAttribute="bottom" constant="8" symbolic="YES" id="f3G-KX-LBt"/>
+                <constraint firstItem="MD5-GE-gLh" firstAttribute="top" relation="greaterThanOrEqual" secondItem="iN0-l3-epB" secondAttribute="top" constant="10" id="hHZ-AN-Ump"/>
+                <constraint firstItem="MD5-GE-gLh" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="uLJ-V4-yqs"/>
+                <constraint firstAttribute="bottom" secondItem="hZM-Zo-8Wj" secondAttribute="bottom" constant="20" symbolic="YES" id="vE2-Xj-pDX"/>
+                <constraint firstItem="hZM-Zo-8Wj" firstAttribute="width" secondItem="Byw-du-biV" secondAttribute="width" id="x7k-5V-p4Q"/>
+                <constraint firstItem="hZM-Zo-8Wj" firstAttribute="width" secondItem="wm9-99-XG6" secondAttribute="width" id="xX7-wE-Pjy"/>
+                <constraint firstItem="hZM-Zo-8Wj" firstAttribute="height" secondItem="wm9-99-XG6" secondAttribute="height" id="xeR-oi-X6u"/>
+            </constraints>
             <simulatedStatusBarMetrics key="simulatedStatusBarMetrics"/>
             <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
         </view>
