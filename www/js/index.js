@@ -150,7 +150,7 @@ var app = {
                 console.log('jqXHR', jqXHR);
                 console.log('status', status);
                 $.ui.hideMask();
-                $.ui.popup(jqXHR.responseText);
+                $.ui.popup('Login service failure');
 
             }
         });
@@ -256,8 +256,13 @@ var app = {
 
     acquireQRCode: function(){
 
-        var zoomFactor = '2.7';
-        cordova.plugins.barcodeScanner.scan(app.onQRCodeSuccess, app.onQRCodeFailure, [zoomFactor, 'scannerOverlay']);
+        var zoomFactor = '2.7',
+            retina = window.devicePixelRatio > 1,
+            overlay;
+                      
+            screen.height > 480 ? overlay = 'scannerOverlay' : overlay = 'scannerOverlay_35';
+                      
+        cordova.plugins.barcodeScanner.scan(app.onQRCodeSuccess, app.onQRCodeFailure, [zoomFactor, overlay]);
 
     },
 

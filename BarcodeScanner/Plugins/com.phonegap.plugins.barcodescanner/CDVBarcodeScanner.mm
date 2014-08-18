@@ -76,6 +76,17 @@
 @property (nonatomic)         float                       exposureDurationValue;
 @property (nonatomic)         float                       whiteValue;
 @property (nonatomic)         float                       focusValue;
+// Default manipulation values
+@property (nonatomic)         float                       exposureGainValueDefault;
+@property (nonatomic)         float                       exposureDurationValueDefault;
+@property (nonatomic)         float                       whiteValueDefault;
+@property (nonatomic)         float                       focusValueDefault;
+// UI Controls
+@property (nonatomic, retain) UISlider*                   exposureDurationIndexSlider;
+@property (nonatomic, retain) UISlider*                   exposureGainSlider;
+@property (nonatomic, retain) UISlider*                   whiteBalanceTemperatureSlider;
+@property (nonatomic, retain) UISlider*                   focusPositionSlider;
+
 
 - (id)initWithPlugin:(CDVBarcodeScanner*)plugin callback:(NSString*)callback parentViewController:(UIViewController*)parentViewController alterateOverlayXib:(NSString *)alternateXib alterateZoomValue:(CGFloat)effectiveScale;
 - (void)scanBarcode;
@@ -123,6 +134,7 @@
 - (IBAction)onDurationChange:(id)sender;
 - (IBAction)onGainChanged:(id)sender;
 - (void)updateCaptureDevice;
+- (IBAction)onResetOptions:(id)sender;
 
 @end
 
@@ -252,6 +264,16 @@
 @synthesize whiteValue              = _whiteValue;
 @synthesize focusValue              = _focusValue;
 
+@synthesize exposureGainValueDefault       = _exposureGainValueDefault;
+@synthesize exposureDurationValueDefault   = _exposureDurationValueDefault;
+@synthesize whiteValueDefault              = _whiteValueDefault;
+@synthesize focusValueDefault              = _focusValueDefault;
+
+@synthesize exposureDurationIndexSlider    = _exposureDurationIndexSlider;
+@synthesize exposureGainSlider             = _exposureGainSlider;
+@synthesize whiteBalanceTemperatureSlider  = _whiteBalanceTemperatureSlider;
+@synthesize focusPositionSlider            = _focusPositionSlider;
+
 //--------------------------------------------------------------------------
 - (id)initWithPlugin:(CDVBarcodeScanner*)plugin
             callback:(NSString*)callback
@@ -273,6 +295,11 @@ parentViewController:(UIViewController*)parentViewController
     self.is2D      = YES;
     self.capturing = NO;
     
+    self.exposureGainValueDefault = 0;
+    self.exposureDurationValueDefault = 9;
+    self.whiteValueDefault = 0.5;
+    self.focusValueDefault = 0.5;
+    
     return self;
     
 }
@@ -291,6 +318,16 @@ parentViewController:(UIViewController*)parentViewController
     self.updatedScaleDelta = nil;
     
     self.capturing = NO;
+    
+    self.exposureGainValueDefault = nil;
+    self.exposureDurationValueDefault = nil;
+    self.whiteValueDefault = nil;
+    self.focusValueDefault = nil;
+    
+    self.exposureDurationIndexSlider = nil;
+    self.exposureGainSlider = nil;
+    self.whiteBalanceTemperatureSlider = nil;
+    self.focusPositionSlider = nil;
     
     [super dealloc];
 }
@@ -746,10 +783,52 @@ parentViewController:(UIViewController*)parentViewController
 
 //--------------------------------------------------------------------------
 
+- (IBAction)onResetOptions:(id)sender {
+    
+    self.processor.focusValue = self.processor.focusValueDefault;
+    self.processor.whiteValue = self.processor.whiteValueDefault;
+    self.processor.exposureDurationValue = self.processor.exposureDurationValueDefault;
+    self.processor.exposureGainValue = self.processor.exposureGainValueDefault;
+    
+    AVCaptureDevice* currentDevice = self.processor.captureDevice;
+    
+   [self resetCapture:currentDevice];
+    
+    if ( [currentDevice lockForConfiguration:NULL] == NO ) {
+        
+        [currentDevice lockForConfiguration:NULL];
+        
+    }
+    
+    [self updateFocus:currentDevice];
+    currentDevice.whiteBalanceTemperature = self.processor.whiteValue;
+    
+    // currentDevice.exposureDuration = AVCaptureExposureDurationMake(self.processor.exposureDurationValueDefault);
+    // currentDevice.exposureMode = AVCaptureExposureModeAutoExpose;
+    
+    [self updateGain:currentDevice];
+    
+    if ( [currentDevice lockForConfiguration:NULL] == YES ) {
+        
+        [currentDevice unlockForConfiguration];
+        
+    }
+    
+    [self resetUIControls];
+    
+}
+
+//--------------------------------------------------------------------------
+
 - (IBAction)onFocusChange:(id)sender {
     
     UISlider *slider = (UISlider *)sender;
     float currentValue = (float)[slider value];
+    
+    if(self.processor.focusPositionSlider == Nil){
+        
+        self.processor.focusPositionSlider = slider;
+    }
     
     self.processor.focusValue = currentValue;
     
@@ -765,20 +844,27 @@ parentViewController:(UIViewController*)parentViewController
         
     }
     
-    // enable the manual focus mode, then check to see if that worked
-    currentDevice.manualFocusSupportEnabled = YES;
-    if ([currentDevice isFocusModeSupported:AVCaptureFocusModeManual]) {
-        // set the focus position, the range is [0..1]
-        currentDevice.focusPosition = self.processor.focusValue;
-        
-        // tap the device to use the new value by setting the mode to manual
-        currentDevice.focusMode = AVCaptureFocusModeManual;
-        
-    }
+    [self updateFocus:currentDevice];
+    
     
     if ( [currentDevice lockForConfiguration:NULL] == YES ) {
         
         [currentDevice unlockForConfiguration];
+        
+    }
+    
+}
+
+- (void)updateFocus:(AVCaptureDevice *)device{
+    
+    // enable the manual focus mode, then check to see if that worked
+    device.manualFocusSupportEnabled = YES;
+    if ([device isFocusModeSupported:AVCaptureFocusModeManual]) {
+        // set the focus position, the range is [0..1]
+        device.focusPosition = self.processor.focusValue;
+        
+        // tap the device to use the new value by setting the mode to manual
+        device.focusMode = AVCaptureFocusModeManual;
         
     }
     
@@ -791,6 +877,12 @@ parentViewController:(UIViewController*)parentViewController
     UISlider *slider = (UISlider *)sender;
     float currentValue = (float)[slider value];
     
+    if(self.processor.whiteBalanceTemperatureSlider == Nil){
+        
+        self.processor.whiteBalanceTemperatureSlider = slider;
+    
+    }
+    
     NSLog(@"SliderValue **onWhiteChange** ... %.4f", currentValue);
     
     self.processor.whiteValue = currentValue;
@@ -799,7 +891,7 @@ parentViewController:(UIViewController*)parentViewController
     
     [self updateCapture:currentDevice];
     
-    if ( [currentDevice lockForConfiguration:NULL] == NO ) {
+    if ([currentDevice lockForConfiguration:NULL] == NO) {
         
         [currentDevice lockForConfiguration:NULL];
         
@@ -827,6 +919,12 @@ parentViewController:(UIViewController*)parentViewController
     UISlider *slider = (UISlider *)sender;
     float currentValue = (float)[slider value];
     
+    if(self.processor.exposureDurationIndexSlider == Nil){
+        
+        self.processor.exposureDurationIndexSlider = slider;
+    
+    }
+    
     NSLog(@"SliderValue **onDurationChange** ... %.4f", currentValue);
     
     NSInteger exposureTimes[] = { 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512, 768, 1024 };
@@ -837,7 +935,7 @@ parentViewController:(UIViewController*)parentViewController
     [self updateCapture:currentDevice];
     
     
-    if ( [currentDevice lockForConfiguration:NULL] == NO ) {
+    if ([currentDevice lockForConfiguration:NULL] == NO ) {
         
         [currentDevice lockForConfiguration:NULL];
         
@@ -881,6 +979,12 @@ parentViewController:(UIViewController*)parentViewController
     UISlider *slider = (UISlider *)sender;
     float currentValue = (float)[slider value];
     
+    if(self.processor.exposureGainSlider == Nil){
+        
+        self.processor.exposureGainSlider = slider;
+        
+    }
+    
     self.processor.exposureGainValue = currentValue;
     
     NSLog(@"SliderValue **onGainChanged** ... %.4f", currentValue);
@@ -889,28 +993,32 @@ parentViewController:(UIViewController*)parentViewController
     
     [self updateCapture:currentDevice];
     
-    
     if ( [currentDevice lockForConfiguration:NULL] == NO ) {
         
         [currentDevice lockForConfiguration:NULL];
         
     }
 
-    currentDevice.manualExposureSupportEnabled = YES;
-    
-    if ([currentDevice isExposureModeSupported:AVCaptureExposureModeManual]) {
-        
-        // set the gain and exposure duration, duration is set as a fractional
-        // shutter speed just like a "real" camera. Gain is a value from 1..?
-        
-        currentDevice.exposureGain = self.processor.exposureGainValue;
-        currentDevice.exposureMode = AVCaptureExposureModeManual;
-      
-    }
+    [self updateGain:currentDevice];
     
     if ( [currentDevice lockForConfiguration:NULL] == YES ) {
         
         [currentDevice unlockForConfiguration];
+        
+    }
+    
+}
+
+- (void)updateGain:(AVCaptureDevice *)device{
+    
+    device.manualExposureSupportEnabled = YES;
+    
+    if ([device isExposureModeSupported:AVCaptureExposureModeManual]) {
+        
+        // set the gain and exposure duration, duration is set as a fractional
+        // shutter speed just like a "real" camera. Gain is a value from 1..?
+        device.exposureGain = self.processor.exposureGainValue;
+        device.exposureMode = AVCaptureExposureModeManual;
         
     }
     
@@ -945,6 +1053,55 @@ parentViewController:(UIViewController*)parentViewController
     
 }
 
+//--------------------------------------------------------------------------
+- (void)resetCapture:(AVCaptureDevice *)device{
+    
+    NSError*    error = nil;
+    if ([device lockForConfiguration:&error]) {
+        
+        device.contrast = 0.0;
+        device.saturation = 0.5;
+                if (device.lowLightBoostSupported) {
+            device.automaticallyEnablesLowLightBoostWhenAvailable = YES;
+        }
+        
+        [device unlockForConfiguration];
+        
+    }
+    
+}
+
+//--------------------------------------------------------------------------
+- (void)resetUIControls{
+    
+    if(self.processor.exposureDurationIndexSlider){
+        
+        self.processor.exposureDurationIndexSlider.value = self.processor.exposureDurationValueDefault;
+        
+    }
+
+    
+    if(self.processor.exposureGainSlider){
+        
+        self.processor.exposureGainSlider.value = self.processor.exposureGainValueDefault;
+        
+    }
+
+    
+    if(self.processor.whiteBalanceTemperatureSlider){
+        
+        self.processor.whiteBalanceTemperatureSlider.value = self.processor.whiteValueDefault;
+        
+    }
+
+    
+    if(self.processor.focusPositionSlider){
+        
+        self.processor.focusPositionSlider.value = self.processor.focusValueDefault;
+        
+    }
+    
+}
 
 //--------------------------------------------------------------------------
 - (id)initWithProcessor:(CDVbcsProcessor*)processor alternateOverlay:(NSString *)alternateXib {
@@ -1294,5 +1451,6 @@ parentViewController:(UIViewController*)parentViewController
     [CATransaction commit];
     [super willAnimateRotationToInterfaceOrientation:orientation duration:duration];
 }
+
 
 @end
