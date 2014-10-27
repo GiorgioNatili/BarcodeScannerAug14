@@ -150,7 +150,7 @@ var app = {
                 console.log('jqXHR', jqXHR);
                 console.log('status', status);
                 $.ui.hideMask();
-                navigator.notification.alert('Login service failure: ' + status + ' - ' +jqXHR.statusText, app.start(), 'Attention!');
+                navigator.notification.alert('Login service failure: ' + status + ' - ' +jqXHR.statusText, null, 'Attention!');
                
 
             }
