@@ -1285,10 +1285,11 @@ class GreyscaleLuminanceSource : public LuminanceSource {
   int top_;
   int width_;
   int height_;
+  bool invertedMatrix_;
 
  public:
   GreyscaleLuminanceSource(unsigned char* greyData, int dataWidth, int dataHeight, int left,
-      int top, int width, int height);
+      int top, int width, int height, bool invertedMatrix = false);
 
   unsigned char* getRow(int y, unsigned char* row);
   unsigned char* getMatrix();
@@ -1350,6 +1351,7 @@ class GreyscaleRotatedLuminanceSource : public LuminanceSource {
   int top_;
   int width_;
   int height_;
+  bool invertedMatrix_;
 
 public:
   GreyscaleRotatedLuminanceSource(unsigned char* greyData, int dataWidth, int dataHeight,

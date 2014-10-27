@@ -72,7 +72,7 @@
 @property (nonatomic)         BOOL                        capturing;
 @property (nonatomic)         BOOL                        zooming;
 // Default inverted Matrix
-@property (nonatomic)         BOOL                        invertedMatrix;
+@property (nonatomic)         bool                        invertedMatrix;
 // Values updated by the slider and refleted into the view
 @property (nonatomic)         float                       exposureGainValue;
 @property (nonatomic)         float                       exposureDurationValue;
@@ -401,33 +401,33 @@ parentViewController:(UIViewController*)parentViewController
 - (NSString*)setUpCaptureSession {
     NSError* error = nil;
     
-   // AVCaptureSession* captureSession = [[[AVCaptureSession alloc] init] autorelease];
-   // self.captureSession = captureSession;
+   AVCaptureSession* captureSession = [[[AVCaptureSession alloc] init] autorelease];
+   self.captureSession = captureSession;
     
-   // AVCaptureDevice* device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-   // if (!device) return @"unable to obtain video capture device";
+   AVCaptureDevice* device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+   if (!device) return @"unable to obtain video capture device";
     
-   // AVCaptureDeviceInput* input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
-   // if (!input) return @"unable to obtain video capture device input";
+   AVCaptureDeviceInput* input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
+   if (!input) return @"unable to obtain video capture device input";
     
-   // AVCaptureVideoDataOutput* output = [[[AVCaptureVideoDataOutput alloc] init] autorelease];
-   // if (!output) return @"unable to obtain video capture output";
+   AVCaptureVideoDataOutput* output = [[[AVCaptureVideoDataOutput alloc] init] autorelease];
+   if (!output) return @"unable to obtain video capture output";
     
-    // Pointer needed in order to apply the effect in runtime
-    // self.captureDevice = device;
+   // Pointer needed in order to apply the effect in runtime
+   self.captureDevice = device;
     
     NSDictionary* videoOutputSettings = [NSDictionary
                                          dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA]
                                          forKey:(id)kCVPixelBufferPixelFormatTypeKey
                                          ];
     
-  /*  output.alwaysDiscardsLateVideoFrames = YES;
+    output.alwaysDiscardsLateVideoFrames = YES;
     output.videoSettings = videoOutputSettings;
   
     [output setSampleBufferDelegate:self queue:dispatch_get_main_queue()];
-    */
+    
     // Fallback to get the highest supported resolution
-   /* if([captureSession canSetSessionPreset:AVCaptureSessionPresetHigh]){
+    if([captureSession canSetSessionPreset:AVCaptureSessionPresetHigh]){
         
         [captureSession setSessionPreset:AVCaptureSessionPresetHigh];
         NSLog(@"AVCaptureSessionPresetHigh!");
@@ -461,13 +461,12 @@ parentViewController:(UIViewController*)parentViewController
     else {
         return @"unable to add video capture output to session";
     }
-    */
     
     // setup capture preview layer
-  //  self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:captureSession];
+    self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:captureSession];
     
     // run on next event loop pass [captureSession startRunning]
-   // [captureSession performSelector:@selector(startRunning) withObject:nil afterDelay:0];
+    [captureSession performSelector:@selector(startRunning) withObject:nil afterDelay:0];
     
     
     return nil;
@@ -678,10 +677,12 @@ parentViewController:(UIViewController*)parentViewController
     
     CVPixelBufferUnlockBaseAddress(imageBuffer,0);
     
+    bool invertedMatrix = self.invertedMatrix;
+    
     using namespace zxing;
     
     Ref<LuminanceSource> luminanceSource (
-                                          new GreyscaleLuminanceSource(greyData, greyWidth, greyWidth, 0, 0, greyWidth, greyWidth)
+                                          new GreyscaleLuminanceSource(greyData, greyWidth, greyWidth, 0, 0, greyWidth, greyWidth, invertedMatrix)
                                           );
     
     
